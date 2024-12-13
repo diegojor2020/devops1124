@@ -1,9 +1,8 @@
 ---
 - hosts: web
-  become: yes
+  become: true
   vars_files:
-    - vars/default.yml  
-  gather_facts: true  
+    - vars/default.yml
   tasks:
     - name: 'Instalação de pacotes webserver'
       become: yes
@@ -23,24 +22,24 @@
           - curl
           - vim
         state: present
-      when: ansible_os_family == 'Debian'    
     - name: 'Diretorio do webserver'
       become: yes
-      file:
+      file: 
         path: /srv/www
         state: directory
         owner: "{{ app_user }}"
         mode: '0775'
     - name: 'Download e Extração do arquivo da aplicação'
-      unarchive:
+      unarchive: 
         src: https://github.com/rogerramossilva/devops/raw/master/express.zip
         dest: /srv/www
+        validate_certs: no
         remote_src: yes
     - name: 'Substitui IP de Conexão com o Banco'
       replace:
         path: /srv/www/express/backup.php
         regexp: '192\.168\.1\.20'
-        replace: '172.17.177.102'
+        replace: '172.17.177.42'
     - name: 'Criando virtual host para pagina express.asf.com'
       template:
         src: "files/express.conf"
@@ -68,19 +67,20 @@
       apache2_module:
         state: present
         name: vhost_alias
-      notify: Reload Apache   
-  
-  
+      notify: Reload Apache
+    
+
   handlers:
     - name: Reload Apache
-      service:
+      service: 
         name: apache2
         state: reloaded
+
     - name: Restart Apache
       service:
         name: apache2
         state: restarted
     - name: Start Apache
-      service:
+      service: 
         name: apache2
         state: started
